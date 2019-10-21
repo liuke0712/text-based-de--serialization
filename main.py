@@ -81,16 +81,19 @@ def workload(category):
     if query.__contains__("unitSize"):
         unitSize = query["unitSize"]
 
-    batchStartIndex = 1
+    batches = splitData(unitSize)
+
+    selectStartIndex = 0
     if query.__contains__("batchID"):
-        batchStartIndex = query["batchID"]
+        selectStartIndex = query["batchID"]
     
     batchSize = len(MatricList)
     if query.__contains__("batchSize"):
         batchSize = query["batchSize"]
 
-    batch_list_dist(unitSize, batchStartIndex, batchSize)
-
+    # batch_list_dist(unitSize, batchStartIndex, batchSize)
+    print(selectStartIndex, batchSize)
+    selectBatch(selectStartIndex, batchSize)
 
     # Prepare for the response
     res = {}
@@ -166,22 +169,22 @@ def read_csv_file(csv_file_name):
 #         print ("Do not have this type!")
         
 #Generate requited batch
-def batch_list_dist(unitSize, BatchID, BatchSize):
-    global MatricList
-    global BatchList
-    global LastBatchID
+# def batch_list_dist(unitSize, BatchID, BatchSize):
+#     global MatricList
+#     global BatchList
+#     global LastBatchID
 
-    unitSize = int(unitSize)
-    BatchID = int(BatchID)
-    BatchSize = int(BatchSize)
+#     unitSize = int(unitSize)
+#     BatchID = int(BatchID)
+#     BatchSize = int(BatchSize)
 
-    start = (BatchID-1)*unitSize
-    end = ((BatchID-1)*unitSize)+unitSize*BatchSize
+#     start = (BatchID-1)*unitSize
+#     end = ((BatchID-1)*unitSize)+unitSize*BatchSize
 
-    # BatchList = MatricList[(BatchID-1)*unitSize:((BatchID-1)*unitSize)+unitSize*BatchSize]
-    BatchList = MatricList[start:end]
+#     # BatchList = MatricList[(BatchID-1)*unitSize:((BatchID-1)*unitSize)+unitSize*BatchSize]
+#     BatchList = MatricList[start:end]
 
-    LastBatchID = BatchID + BatchSize - 1        
+#     LastBatchID = BatchID + BatchSize - 1        
 
 '''?????how to transfer list to this function'''
 #Select Show Matric from BatchList
@@ -193,11 +196,38 @@ def matric_list(fields):
     for workload in TotalList:
         extractedData = {}
         for field in fields:
-            extractedData[item] = workload[item]
+            extractedData[field] = workload[field]
         MatricList.append(extractedData)
 
+def splitData(unitSize):
+    global MatricList
+
+    unitSize = int(unitSize)
+
+    index = 0
+    while (index < len(MatricList)):
+        end = index + unitSize
+        BatchList.append(MatricList[index: end])
+        index = end
+
+    print(BatchList)
 
 
+def selectBatch(BatchID, BatchSize):
+    global MatricList
+    global BatchList
+    global LastBatchID
+
+    BatchID = int(BatchID)
+    BatchSize = int(BatchSize)
+
+    # start = (BatchID-1)*unitSize
+    # end = ((BatchID-1)*unitSize)+unitSize*BatchSize
+
+    # BatchList = MatricList[(BatchID-1)*unitSize:((BatchID-1)*unitSize)+unitSize*BatchSize]
+    BatchList = BatchList[BatchID:BatchSize]
+
+    LastBatchID = BatchID + BatchSize - 1      
 
 
 

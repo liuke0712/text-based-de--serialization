@@ -16,13 +16,13 @@ import json
 import random
 
 #define file paths
-DVD_csv_file = '/Users/Maggie/Desktop/DVD-testing.csv'
-DVD_json_file = '/Users/Maggie/Desktop/DVD-testing.json'
-NDBench_csv_file = '/Users/Maggie/Desktop/NDBench-testing.csv'
-NDBench_json_file = '/Users/Maggie/Desktop/NDBench-testing.json'
+DVD_csv_file = './statics/DVD-testing.csv'
+DVD_json_file = './statics/DVD-testing.json'
+NDBench_csv_file = './statics/NDBench-testing.csv'
+NDBench_json_file = './statics/NDBench-testing.json'
 
 #define global parameters
-json_file_path = ''
+# json_file_path = ''
 TotalList = []
 BatchList = []
 MatricList = []
@@ -39,8 +39,8 @@ app = Flask(__name__)
     
 '''?????how to transfer all parameters to each function'''
 # @app.route('/getdata/NDBench?BatchUnit=10&&BatchID=1&&BatchSize=5&&Item1&&Item2', methods=['GET'])
-@app.route('/api/workload', methods=['GET'])
-def workload():
+@app.route('/api/workload/<category>', methods=['GET'])
+def workload(category):
     validFields = [ "rfwID", "fields", "unitSize", "batchID", "batchSize"]
     queryReq = request.args
     query = {}
@@ -53,38 +53,68 @@ def workload():
     if queryReq.__contains__("fields"):
         query["fields"] = queryReq["fields"].split(",")
 
-    return query
+    # return request.view_args["category"]
+    read_csv_file(request.view_args["category"])
+    return jsonify(TotalList)
+
+
+
+def read_csv_file(csv_file_name):
+    global TotalList
+    #Request DVD Store Data
+    basePath = "./statics/"
+    filePath = basePath + csv_file_name + ".csv"
+    try:
+        with open(filePath) as csvfile:
+            reader = csv.DictReader(csvfile)
+            field = reader.fieldnames
+            for row in reader:
+                TotalList.extend([{field[i]:row[field[i]] for i in range(len(row))}])
+        pass
+    except:
+        print ("Do not have this type! " + filePath)
+        pass
+        
+
+
+
 
 
 
 #Read CSV File
-def read_csv_file(csv_file):
-    global DVD_csv_file
-    global DVD_json_file
-    global NDBench_csv_file
-    global NDBench_json_file
-    global json_file_path
-    global TotalList
-    FileType = csv_file
-    #Request DVD Store Data
-    if FileType == "DVD":
-        json_file_path = DVD_csv_file
-        with open(DVD_csv_file) as csvfile:
-            reader = csv.DictReader(csvfile)
-            field = reader.fieldnames
-            for row in reader:
-                TotalList.extend([{field[i]:row[field[i]] for i in range(len(row))}])       
-    #Request NDBench Data
-    elif FileType == "NDBench":
-        json_file_path = NDBench_json_file
-        with open(NDBench_csv_file) as csvfile:
-            reader = csv.DictReader(csvfile)
-            field = reader.fieldnames
-            for row in reader:
-                TotalList.extend([{field[i]:row[field[i]] for i in range(len(row))}])       
-    #Exception
-    else:
-        print ("Do not have this type!")
+# def read_csv_file(csv_file):
+#     global DVD_csv_file
+#     global DVD_json_file
+#     global NDBench_csv_file
+#     global NDBench_json_file
+#     global json_file_path
+#     global TotalList
+#     FileType = csv_file
+#     #Request DVD Store Data
+#     with open(DVD_csv_file) as csvfile:
+#         reader = csv.DictReader(csvfile)
+#         field = reader.fieldnames
+#         for row in reader:
+#             TotalList.extend([{field[i]:row[field[i]] for i in range(len(row))}])
+
+#     if FileType == "DVD":
+#         json_file_path = DVD_csv_file
+#         with open(DVD_csv_file) as csvfile:
+#             reader = csv.DictReader(csvfile)
+#             field = reader.fieldnames
+#             for row in reader:
+#                 TotalList.extend([{field[i]:row[field[i]] for i in range(len(row))}])       
+#     #Request NDBench Data
+#     elif FileType == "NDBench":
+#         json_file_path = NDBench_json_file
+#         with open(NDBench_csv_file) as csvfile:
+#             reader = csv.DictReader(csvfile)
+#             field = reader.fieldnames
+#             for row in reader:
+#                 TotalList.extend([{field[i]:row[field[i]] for i in range(len(row))}])       
+#     #Exception
+#     else:
+#         print ("Do not have this type!")
         
 #Generate requited batch
 def batch_list_dist(TotalList, BatchUnit, BatchID, BatchSize):

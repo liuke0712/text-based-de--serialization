@@ -15,19 +15,21 @@ import csv
 import json
 import random
 
+import uuid
+
 #define file paths
-DVD_csv_file = './statics/DVD-testing.csv'
-DVD_json_file = './statics/DVD-testing.json'
-NDBench_csv_file = './statics/NDBench-testing.csv'
-NDBench_json_file = './statics/NDBench-testing.json'
+# DVD_csv_file = './statics/DVD-testing.csv'
+# DVD_json_file = './statics/DVD-testing.json'
+# NDBench_csv_file = './statics/NDBench-testing.csv'
+# NDBench_json_file = './statics/NDBench-testing.json'
 
 #define global parameters
 # json_file_path = ''
 TotalList = []
 BatchList = []
 MatricList = []
-MatricItem = int
-RFWID = int
+# MatricItem = int
+RFWID = uuid.uuid4()
 LastBatchID = int
 
 app = Flask(__name__)
@@ -41,6 +43,11 @@ app = Flask(__name__)
 # @app.route('/getdata/NDBench?BatchUnit=10&&BatchID=1&&BatchSize=5&&Item1&&Item2', methods=['GET'])
 @app.route('/api/workload/<category>', methods=['GET'])
 def workload(category):
+
+    global MatricList
+    global RFWID
+    global LastBatchID
+
     validFields = [ "rfwID", "fields", "unitSize", "batchID", "batchSize"]
     queryReq = request.args
     query = {}
@@ -52,10 +59,52 @@ def workload(category):
     # format fields
     if queryReq.__contains__("fields"):
         query["fields"] = queryReq["fields"].split(",")
+    else:
+        query["fields"] = []
+
+    if query.__contains__("rfwID"):
+        RFWID = query["rfwID"]
+
+    # Start Actions
 
     # return request.view_args["category"]
     read_csv_file(request.view_args["category"])
-    return jsonify(TotalList)
+    # return jsonify(TotalList)
+
+
+    if len(query["fields"]) > 0:
+        matric_list(query["fields"])
+    else:
+        MatricList = TotalList
+
+    unitSize = 100
+    if query.__contains__("unitSize"):
+        unitSize = query["unitSize"]
+
+    batchStartIndex = 1
+    if query.__contains__("batchID"):
+        batchStartIndex = query["batchID"]
+    
+    batchSize = len(MatricList)
+    if query.__contains__("batchSize"):
+        batchSize = query["batchSize"]
+
+    batch_list_dist(unitSize, batchStartIndex, batchSize)
+
+
+    # Prepare for the response
+    res = {}
+
+    res["rfwID"] = RFWID
+    res["lastBatchID"] = LastBatchID
+    res["workloadBatches"] = BatchList
+
+    return jsonify(res)
+
+    
+    
+
+    
 
 
 
@@ -117,27 +166,56 @@ def read_csv_file(csv_file_name):
 #         print ("Do not have this type!")
         
 #Generate requited batch
-def batch_list_dist(TotalList, BatchUnit, BatchID, BatchSize):
+def batch_list_dist(unitSize, BatchID, BatchSize):
+    global MatricList
     global BatchList
     global LastBatchID
-    BatchList = TotalList[(BatchID-1)*BatchUnit:((BatchID-1)*BatchUnit)+BatchUnit*BatchSize]
+
+    unitSize = int(unitSize)
+    BatchID = int(BatchID)
+    BatchSize = int(BatchSize)
+
+    start = (BatchID-1)*unitSize
+    end = ((BatchID-1)*unitSize)+unitSize*BatchSize
+
+    # BatchList = MatricList[(BatchID-1)*unitSize:((BatchID-1)*unitSize)+unitSize*BatchSize]
+    BatchList = MatricList[start:end]
+
     LastBatchID = BatchID + BatchSize - 1        
 
 '''?????how to transfer list to this function'''
 #Select Show Matric from BatchList
-def matric_list(BatchList, Item1, Item2):
+
+def matric_list(fields):
+    global TotalList
     global MatricList
-    Items = [Item1, Item2]
-    for workload in BatchList:
+
+    for workload in TotalList:
         extractedData = {}
-        for item in Items:
+        for field in fields:
             extractedData[item] = workload[item]
         MatricList.append(extractedData)
+
+
+
+
+
+
+# def matric_list(Item1, Item2):
+#     global BatchList
+#     global MatricList
+
+#     Items = [Item1, Item2]
+#     for workload in BatchList:
+#         extractedData = {}
+#         for item in Items:
+#             extractedData[item] = workload[item]
+#         MatricList.append(extractedData)
     
 #Convert csv data into json
-def convert_write_json(MatricList, json_file_path):
-    with open(json_file_path, "w") as output:
-        output.write(json.dumps(MatricList, sort_keys=False, separators=((',',':'))))
+# def convert_write_json(MatricList, json_file_path):
+#     with open(json_file_path, "w") as output:
+#         output.write(json.dumps(MatricList, sort_keys=False, separators=((',',':'))))
 
 if __name__=='__main__':
     app.run(debug=True)

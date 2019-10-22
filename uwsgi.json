@@ -1,0 +1,9 @@
+{"uwsgi": {
+  "module": "main:app",
+  "socket": ["/tmp/uwsgi.sock"],
+  "chmod-socket": "664",
+  "master": true,
+  "workers": 5,
+  "vacuum": true,
+  "die-on-term": true
+}}

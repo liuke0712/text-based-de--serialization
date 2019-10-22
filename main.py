@@ -134,9 +134,10 @@ def selectBatch(BatchID, BatchSize):
     BatchID = int(BatchID)
     BatchSize = int(BatchSize)
 
-    BatchList = BatchList[BatchID:BatchSize]
+    LastBatchID = BatchID + BatchSize
+    BatchList = BatchList[BatchID:LastBatchID]
 
-    LastBatchID = BatchID + BatchSize - 1      
+    # LastBatchID = BatchID + BatchSize - 1      
     
 #Convert csv data into json
 # def convert_write_json(MatricList, json_file_path):

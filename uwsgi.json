@@ -1,4 +1,5 @@
 {"uwsgi": {
+  "plugin": "python3",
   "module": "main:app",
   "socket": ["/tmp/uwsgi.sock"],
   "chmod-socket": "664",

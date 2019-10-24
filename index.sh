@@ -4,17 +4,12 @@
 
 username=$EXEC_USER
 userid=${EXEC_USER_ID}
-
-folder=$1
-permission=$2
-
-: ${folder:="."}
-: ${permission:=755}
+permission=${EXEC_PERMISSION}
 
 echo "Summoning $username - UID:$userid ..."
 
 # Add local user
 adduser $username -u $userid -D -s /bin/sh
-chown -R $username $folder
-chmod -R $permission $folder
+chown -R $username .
+chmod -R $permission .
 exec su-exec $username "$@"

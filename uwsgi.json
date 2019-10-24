@@ -1,10 +1,12 @@
 {"uwsgi": {
   "plugin": "python3",
-  "module": "main:app",
-  "socket": ["/tmp/uwsgi.sock"],
-  "chmod-socket": "664",
-  "master": true,
-  "workers": 5,
+  "wsgi-file": "main.py",
+  "callable": "app",
+  "http-socket": "0.0.0.0:9000",
+  "protocol": "http",
   "vacuum": true,
-  "die-on-term": true
+  "buffer-size": 65535,
+  "enable-threads": true,
+  "master": true,
+  "processes": 4
 }}

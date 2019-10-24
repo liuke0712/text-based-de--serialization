@@ -27,7 +27,7 @@ LastBatchID = int
 
 app = Flask(__name__)
     
-@app.route('/api/workload/<category>', methods=['GET'])
+@app.route('/api/workloads/<category>', methods=['GET'])
 def workload(category):
 
     global MatricList
@@ -64,7 +64,7 @@ def workload(category):
     if query.__contains__("unitSize"):
         unitSize = query["unitSize"]
 
-    batches = splitData(unitSize)
+    splitData(unitSize)
 
     selectStartIndex = 0
     if query.__contains__("batchID"):
@@ -145,5 +145,5 @@ def selectBatch(BatchID, BatchSize):
 #         output.write(json.dumps(MatricList, sort_keys=False, separators=((',',':'))))
 
 if __name__=='__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=False)
     
